@@ -1,0 +1,62 @@
+info:
+  app:
+    name: holy-link
+    description: church application
+    version: 1.0.0
+    encoding: UTF-8
+    java:
+      version: 1.17.0
+
+spring:
+  profile: ${ENV}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.metrics.web.servlet.WebMvcMetricsAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  cloud:
+    config:
+      import-check:
+        enabled: false
+  datasource:
+    url: jdbc:postgresql://${PG_DB_HOST}:${PG_DB_PORT}/${PG_DB_NAME}
+    username: ${PG_DB_USERNAME}
+    password: ${PG_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    flyway:
+      baselineOnMigrare: true
+      schemas: ${MULTITENANT_DEFAULT_SCHEMA}
+      createSchemas: true
+      locations: db/migration, db/specific/h2
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        implicit-strategy: com.church.holylink.config.strategies.CustomPresistenceNamingStrategy
+        physical-strategy: com.church.holylink.config.strategies.CustomPresistenceNamingStrategy
+    properties:
+      javax:
+        persistence:
+          schema-generation:
+            scripts:
+              action: create
+              create-target: schema.sql
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: true #LazyLoading
+        current_session_context_class: thread #LazyLoading
+        jdbc:
+          lob:
+            non_contextual_creation: true #Ignore CLOB creation
+  messages:
+    basename: i18n/messages, i18n/messages_es
+  flyway:
+    enabled: true
+multitenant:
+  schemas: ${MULTITENANT_SCHEMAS}
+  package: com.church.holylink
